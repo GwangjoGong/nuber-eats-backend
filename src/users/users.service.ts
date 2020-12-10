@@ -4,11 +4,14 @@ import { Repository } from 'typeorm';
 import { CreateUserInput, CreateUserOutput } from './dtos/create-user.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
+import { JwtService } from 'src/jwt/jwt.service';
+import { EditProfileInput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createUser({
@@ -40,9 +43,11 @@ export class UsersService {
         };
       }
 
+      const token = this.jwtService.sign(user.id);
+
       return {
         ok: true,
-        token: 'Test token',
+        token,
       };
     } catch {
       return {
@@ -50,5 +55,21 @@ export class UsersService {
         error: "Couln't log in user",
       };
     }
+  }
+
+  findById(id: number): Promise<User> {
+    return this.users.findOne({ id });
+  }
+
+  async update(id: number, { email, password }: EditProfileInput) {
+    const user = await this.findById(id);
+    if (email) {
+      user.email = email;
+    }
+
+    if (password) {
+      user.password = password;
+    }
+    return this.users.save(user);
   }
 }
