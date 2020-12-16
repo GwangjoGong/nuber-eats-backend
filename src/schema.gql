@@ -8,7 +8,7 @@ type User {
   updatedAt: DateTime!
   email: String!
   password: String!
-  verfied: Boolean!
+  verified: Boolean!
   role: UserRole!
 }
 

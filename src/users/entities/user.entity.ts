@@ -34,7 +34,7 @@ export class User extends CoreEntity {
 
   @Column({ default: false })
   @Field(is => Boolean, { defaultValue: false })
-  verfied: boolean;
+  verified: boolean;
 
   @Column({ type: 'enum', enum: UserRole })
   @Field(is => UserRole)
