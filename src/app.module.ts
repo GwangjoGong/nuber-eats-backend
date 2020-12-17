@@ -48,8 +48,9 @@ import { MailModule } from './mail/mail.module';
       username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      synchronize: true,
-      logging: true,
+      synchronize: process.env.NODE_ENV !== 'prod',
+      logging:
+        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
       entities: [User, Verification],
     }),
     UsersModule,

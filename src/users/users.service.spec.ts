@@ -233,14 +233,14 @@ describe('UsersService', () => {
         verified: false,
       };
 
-      usersRepository.findOne.mockResolvedValue(oldUser);
+      usersRepository.findOneOrFail.mockResolvedValue(oldUser);
       verificationRepository.create.mockReturnValue(newVerfication);
       verificationRepository.save.mockResolvedValue(newVerfication);
 
       await service.editProfile(editProfileArgs.id, editProfileArgs.input);
 
-      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(usersRepository.findOne).toHaveBeenCalledWith({
+      expect(usersRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOneOrFail).toHaveBeenCalledWith({
         id: editProfileArgs.id,
       });
 
@@ -255,6 +255,37 @@ describe('UsersService', () => {
       );
     });
 
+    it('should not change a email if email is already in use', async () => {
+      const oldUser = {
+        email: 'test',
+        verified: true,
+      };
+
+      const anotherUser = {
+        email: 'test2',
+      };
+
+      const editProfileArgs = {
+        id: 1,
+        input: { email: 'test2' },
+      };
+
+      usersRepository.findOneOrFail.mockResolvedValue(oldUser);
+      usersRepository.findOne.mockResolvedValue(anotherUser);
+
+      const result = await service.editProfile(
+        editProfileArgs.id,
+        editProfileArgs.input,
+      );
+
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        email: editProfileArgs.input.email,
+      });
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe('Email is already in use');
+    });
+
     it('should change a password', async () => {
       const oldUser = {
         password: 'old-password',
@@ -267,7 +298,7 @@ describe('UsersService', () => {
         },
       };
 
-      usersRepository.findOne.mockResolvedValue(oldUser);
+      usersRepository.findOneOrFail.mockResolvedValue(oldUser);
 
       const result = await service.editProfile(
         editProfileArgs.id,
@@ -281,7 +312,7 @@ describe('UsersService', () => {
     });
 
     it('should fail on exception', async () => {
-      usersRepository.findOne.mockRejectedValue(new Error());
+      usersRepository.findOneOrFail.mockRejectedValue(new Error());
 
       const result = await service.editProfile(1, { email: 'whatever' });
 

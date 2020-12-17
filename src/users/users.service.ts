@@ -102,10 +102,19 @@ export class UsersService {
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
-      const user = await this.users.findOne({ id });
-      if (email) {
+      const user = await this.users.findOneOrFail({ id });
+      if (email && email !== user.email) {
+        const existingUser = await this.users.findOne({ email });
+        if (existingUser) {
+          return {
+            ok: false,
+            error: 'Email is already in use',
+          };
+        }
+
         user.email = email;
         user.verified = false;
+        await this.verifications.delete({ user: { id: user.id } });
         const verification = await this.verifications.save(
           this.verifications.create({ user }),
         );
