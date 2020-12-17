@@ -2,6 +2,33 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Category {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  coverImage: String
+  slug: String!
+  restaurants: [Restaurant!]!
+  restaurantCount: Float!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Restaurant {
+  id: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  coverImage: String!
+  address: String!
+  category: Category
+  owner: User!
+}
+
 type User {
   id: Float!
   createdAt: DateTime!
@@ -10,12 +37,8 @@ type User {
   password: String!
   verified: Boolean!
   role: UserRole!
+  restaurants: [Restaurant!]!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 enum UserRole {
   Client
@@ -50,9 +73,81 @@ type VerifyEmailOutput {
   ok: Boolean!
 }
 
+type AllCategoriesOutput {
+  error: String
+  ok: Boolean!
+  categories: [Category!]
+}
+
+type CategoryRestaurantOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Float
+  category: Category
+  restaurants: [Restaurant!]
+}
+
+type CreateRestaurantOutput {
+  error: String
+  ok: Boolean!
+}
+
+type DeleteRestaurantOutput {
+  error: String
+  ok: Boolean!
+}
+
+type EditRestaurantOutput {
+  error: String
+  ok: Boolean!
+}
+
+type RestaurantOutput {
+  error: String
+  ok: Boolean!
+  restaurant: Restaurant
+}
+
+type RestaurantsOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Float
+  results: [Restaurant!]
+}
+
+type SearchRestaurantOutput {
+  error: String
+  ok: Boolean!
+  totalPages: Float
+  restaurants: [Restaurant!]
+}
+
 type Query {
   me: User!
   userProfile(id: Float!): UserProfileOutput!
+  restaurants(input: RestaurantsInput!): RestaurantsOutput!
+  restaurant(input: RestaurantInput!): RestaurantOutput!
+  searchRestaurants(input: SearchRestaurantInput!): SearchRestaurantOutput!
+  allCategories: AllCategoriesOutput!
+  categoryRestaurant(input: CategoryRestaurantInput!): CategoryRestaurantOutput!
+}
+
+input RestaurantsInput {
+  page: Float = 1
+}
+
+input RestaurantInput {
+  restaurantId: Float!
+}
+
+input SearchRestaurantInput {
+  page: Float = 1
+  query: String!
+}
+
+input CategoryRestaurantInput {
+  page: Float = 1
+  slug: String!
 }
 
 type Mutation {
@@ -60,6 +155,9 @@ type Mutation {
   login(input: LoginInput!): LoginOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
   verifyEmail(input: VerifyEmailInput!): VerifyEmailOutput!
+  createRestaurant(input: CreateRestaurantInput!): CreateRestaurantOutput!
+  editRestaurant(input: EditRestaurantInput!): EditRestaurantOutput!
+  deleteRestaurant(input: DeleteRestaurantInput!): DeleteRestaurantOutput!
 }
 
 input CreateUserInput {
@@ -80,4 +178,23 @@ input EditProfileInput {
 
 input VerifyEmailInput {
   code: String!
+}
+
+input CreateRestaurantInput {
+  name: String!
+  coverImage: String!
+  address: String!
+  categoryName: String!
+}
+
+input EditRestaurantInput {
+  name: String
+  coverImage: String
+  address: String
+  categoryName: String
+  restaurantId: Float!
+}
+
+input DeleteRestaurantInput {
+  restaurantId: Float!
 }
