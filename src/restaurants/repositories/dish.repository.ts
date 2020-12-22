@@ -1,19 +1,19 @@
 import { User } from 'src/users/entities/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { Restaurant } from '../entities/restaurant.entity';
+import { Dish } from '../entities/dish.entity';
 
-@EntityRepository(Restaurant)
-export class RestaurantRepository extends Repository<Restaurant> {
+@EntityRepository(Dish)
+export class DishRepository extends Repository<Dish> {
   async findAndValidate(id: number, owner: User) {
-    const restaurant = await this.findOne({ id });
-    if (!restaurant) {
+    const dish = await this.findOne({ id }, { relations: ['restaurant'] });
+    if (!dish) {
       return {
         ok: false,
-        error: 'Could not find restaurant',
+        error: 'Could not find dish',
       };
     }
 
-    if (owner.id !== restaurant.ownerId) {
+    if (owner.id !== dish.restaurant.ownerId) {
       return {
         ok: false,
         error: 'Not authorized',
@@ -22,7 +22,7 @@ export class RestaurantRepository extends Repository<Restaurant> {
 
     return {
       ok: true,
-      restaurant,
+      dish,
     };
   }
 }

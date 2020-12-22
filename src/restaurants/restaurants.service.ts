@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Raw } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import {
   CategoryRestaurantInput,
   CategoryRestaurantOutput,
 } from './dtos/category-restaurant.dto';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 import {
   EditRestaurantInput,
   EditRestaurantOutput,
@@ -26,6 +30,7 @@ import {
 } from './dtos/search-restaurants.dto';
 import { Category } from './entities/category.entity';
 import { CategoryRepository } from './repositories/category.repository';
+import { DishRepository } from './repositories/dish.repository';
 import { RestaurantRepository } from './repositories/restaurant.repository';
 
 @Injectable()
@@ -33,6 +38,7 @@ export class RestaurantService {
   constructor(
     private readonly restaurants: RestaurantRepository,
     private readonly categories: CategoryRepository,
+    private readonly dishes: DishRepository,
   ) {}
 
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
@@ -59,7 +65,10 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne({ id: restaurantId });
+      const restaurant = await this.restaurants.findOne(
+        { id: restaurantId },
+        { relations: ['menu'] },
+      );
       if (!restaurant) {
         return {
           ok: false,
@@ -240,6 +249,100 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not load category',
+      };
+    }
+  }
+
+  async createDish(
+    user: User,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    try {
+      const { ok, error, restaurant } = await this.restaurants.findAndValidate(
+        createDishInput.restaurantId,
+        user,
+      );
+      if (!ok) {
+        return {
+          ok,
+          error,
+        };
+      }
+
+      await this.dishes.save(
+        this.dishes.create({ ...createDishInput, restaurant }),
+      );
+
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Cannot create dish',
+      };
+    }
+  }
+
+  async editDish(
+    user: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      const { ok, error } = await this.dishes.findAndValidate(
+        editDishInput.dishId,
+        user,
+      );
+      if (!ok) {
+        return {
+          ok,
+          error,
+        };
+      }
+
+      await this.dishes.save([
+        {
+          id: editDishInput.dishId,
+          ...editDishInput,
+        },
+      ]);
+
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Cannot edit dish',
+      };
+    }
+  }
+
+  async deleteDish(
+    user: User,
+    deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const { ok, error, dish } = await this.dishes.findAndValidate(
+        deleteDishInput.dishId,
+        user,
+      );
+      if (!ok) {
+        return {
+          ok,
+          error,
+        };
+      }
+
+      await this.dishes.delete(dish.id);
+
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Cannot delete dish',
       };
     }
   }
