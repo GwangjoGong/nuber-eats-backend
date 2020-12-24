@@ -43,7 +43,7 @@ type OrderItem {
   id: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
-  dish: [Dish!]!
+  dish: Dish!
   options: [OrderItemOption!]
 }
 
@@ -223,6 +223,11 @@ type GetOrdersOutput {
   orders: [Order!]
 }
 
+type TakeOrderOutput {
+  error: String
+  ok: Boolean!
+}
+
 type Query {
   me: User!
   userProfile(id: Float!): UserProfileOutput!
@@ -274,6 +279,7 @@ type Mutation {
   deleteDish(input: DeleteDishInput!): DeleteDishOutput!
   createOrder(input: CreateOrderInput!): CreateOrderOutput!
   editOrder(input: EditOrderInput!): EditOrderOutput!
+  takeOrder(input: TakeOrderInput!): TakeOrderOutput!
 }
 
 input CreateUserInput {
@@ -365,4 +371,18 @@ input OrderItemOptionInputType {
 input EditOrderInput {
   id: Float!
   status: OrderStatus = Pending
+}
+
+input TakeOrderInput {
+  id: Float!
+}
+
+type Subscription {
+  pendingOrders: Order!
+  cookedOrders: Order!
+  orderUpdates(input: OrderUpdatesInput!): Order!
+}
+
+input OrderUpdatesInput {
+  id: Float!
 }

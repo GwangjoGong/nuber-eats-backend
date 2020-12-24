@@ -21,7 +21,7 @@ export class OrderItemOption extends CoreEntity {
 @ObjectType()
 @Entity()
 export class OrderItem extends CoreEntity {
-  @Field(is => [Dish])
+  @Field(is => Dish)
   @ManyToOne(to => Dish, { nullable: true, onDelete: 'CASCADE' })
   dish: Dish;
 
