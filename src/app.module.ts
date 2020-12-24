@@ -1,19 +1,14 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { join } from 'path';
 import * as Joi from 'joi';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
@@ -24,6 +19,8 @@ import { Dish } from './restaurants/entities/dish.entity';
 import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { PaymentsModule } from './payments/payments.module';
+import { Payment } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
@@ -38,6 +35,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
         };
       },
     }),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
@@ -73,6 +71,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
         Dish,
         Order,
         OrderItem,
+        Payment,
       ],
     }),
     UsersModule,
@@ -89,6 +88,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

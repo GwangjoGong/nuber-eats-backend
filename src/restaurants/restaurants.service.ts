@@ -46,6 +46,9 @@ export class RestaurantService {
       const [restaurants, totalCount] = await this.restaurants.findAndCount({
         take: 25,
         skip: (page - 1) * 25,
+        order: {
+          isPromoted: 'DESC',
+        },
       });
 
       return {
@@ -233,6 +236,9 @@ export class RestaurantService {
         },
         take: 25,
         skip: (page - 1) * 25,
+        order: {
+          isPromoted: 'DESC',
+        },
       });
 
       const totalPages = Math.ceil(
