@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Raw, Repository } from 'typeorm';
+import { Raw } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import {
   CategoryRestaurantInput,
@@ -33,6 +32,8 @@ import { CategoryRepository } from './repositories/category.repository';
 import { DishRepository } from './repositories/dish.repository';
 import { RestaurantRepository } from './repositories/restaurant.repository';
 
+const PAGE_SIZE = 3;
+
 @Injectable()
 export class RestaurantService {
   constructor(
@@ -44,8 +45,8 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput): Promise<RestaurantsOutput> {
     try {
       const [restaurants, totalCount] = await this.restaurants.findAndCount({
-        take: 25,
-        skip: (page - 1) * 25,
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
         order: {
           isPromoted: 'DESC',
         },
@@ -54,7 +55,7 @@ export class RestaurantService {
       return {
         ok: true,
         results: restaurants,
-        totalPages: Math.ceil(totalCount / 25),
+        totalPages: Math.ceil(totalCount / PAGE_SIZE),
       };
     } catch {
       return {
@@ -99,12 +100,12 @@ export class RestaurantService {
         where: {
           name: Raw(name => `${name} ILIKE '%${query}%'`),
         },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
       });
       return {
         ok: true,
-        totalPages: Math.ceil(totalCount / 25),
+        totalPages: Math.ceil(totalCount / PAGE_SIZE),
         restaurants,
       };
     } catch {
@@ -234,15 +235,15 @@ export class RestaurantService {
         where: {
           category,
         },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
         order: {
           isPromoted: 'DESC',
         },
       });
 
       const totalPages = Math.ceil(
-        (await this.getRestaurantCount(category)) / 25,
+        (await this.getRestaurantCount(category)) / PAGE_SIZE,
       );
 
       return {
